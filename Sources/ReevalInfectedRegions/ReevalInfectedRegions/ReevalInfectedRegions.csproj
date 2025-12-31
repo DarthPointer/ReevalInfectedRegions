@@ -37,4 +37,8 @@
 	</Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
- </Project>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+	<Copy SourceFiles="$(TargetPath);$(TargetDir)$(TargetName).pdb" DestinationFolder="$(ProjectDir)../../../ModDistro/ReevalInfectedRegions/plugins/" />
+	<Copy SourceFiles="$(TargetPath);$(TargetDir)$(TargetName).dll" DestinationFolder="$(ProjectDir)../../../ModDistro/ReevalInfectedRegions/plugins/" />
+  </Target>
+</Project>
