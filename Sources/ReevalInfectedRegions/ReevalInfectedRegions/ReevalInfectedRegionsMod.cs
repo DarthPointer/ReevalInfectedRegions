@@ -11,32 +11,34 @@ using System.Linq;
 namespace ReevalInfectedRegions;
 
 [BepInPlugin("DarthPointer.ReevalInfectedRegions", "Reeval Infected Regions", "0.0")]
-public class ReevalInfectedRegionsMod
+public class ReevalInfectedRegionsMod : BaseUnityPlugin
 {
     public void OnEnable()
     {
-        On.SaveState.SaveToString += DaHook;
+        On.PlayerProgression.SaveToDisk += PlayerProgression_SaveToDisk;
     }
 
     public void OnDisabe()
     {
-        On.SaveState.SaveToString -= DaHook;
+        On.PlayerProgression.SaveToDisk -= PlayerProgression_SaveToDisk;
     }
 
-    private string DaHook(On.SaveState.orig_SaveToString orig, SaveState self)
+    private bool PlayerProgression_SaveToDisk(On.PlayerProgression.orig_SaveToDisk orig, PlayerProgression self, bool saveCurrentState, bool saveMaps, bool saveMiscProg)
     {
-        self.miscWorldSaveData.regionsInfectedBySentientRot = [.. self.miscWorldSaveData.regionsInfectedBySentientRot.Where(
+        self.currentSaveState.miscWorldSaveData.regionsInfectedBySentientRot = [..
+            self.currentSaveState.miscWorldSaveData.regionsInfectedBySentientRot.Where(
             (region) =>
-            self.regionStates.First((regionState) => regionState.regionName == region)
-            .sentientRotProgression.Where((kvp) => kvp.Value.rotIntensity > 0)
-            .Count() > 0)];
+            (self.currentSaveState.regionStates.First((regionState) => regionState.regionName == region)
+            ?.sentientRotProgression?.Where((kvp) => (kvp.Value?.rotIntensity ?? 0) > 0)
+            .Count() ?? 0) > 0)];
 
-        self.miscWorldSaveData.regionsInfectedBySentientRotSpread = [.. self.miscWorldSaveData.regionsInfectedBySentientRotSpread.Where(
+        self.currentSaveState.miscWorldSaveData.regionsInfectedBySentientRotSpread = [..
+            self.currentSaveState.miscWorldSaveData.regionsInfectedBySentientRotSpread.Where(
             (region) =>
-            self.regionStates.First((regionState) => regionState.regionName == region)
-            .sentientRotProgression.Where((kvp) => kvp.Value.rotIntensity > 0)
-            .Count() > 0)];
+            (self.currentSaveState.regionStates.First((regionState) => regionState.regionName == region)
+            ?.sentientRotProgression?.Where((kvp) => (kvp.Value?.rotIntensity ?? 0)> 0)
+            .Count() ?? 0) > 0)];
 
-        return orig(self);
+        return orig(self, saveCurrentState, saveMaps, saveMiscProg);
     }
 }
